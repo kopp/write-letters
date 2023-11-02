@@ -1,0 +1,6 @@
+canvas {
+  /* without this, the page will scroll vertically as soon as one makes vertical movements when writing */
+  touch-action: none;
+  border: '1px solid black';
+  background-color: yellow;
+}
