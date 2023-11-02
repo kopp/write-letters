@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react'
-import './App.css'
-
+import { useState, useRef, useEffect } from 'react';
+import './App.css';
+import { LETTERS, pathFromLetter } from "./alphabet";
 
 
 
@@ -33,7 +33,8 @@ function useWindowDimensions() {
 
 function Canvas() {
   const canvasRef = useRef<null | HTMLCanvasElement>(null);
-  const [isStylusOnly, setIsStylusOnly] = useState(true);
+  const [scaleFactor, setScaleFactor] = useState(200);
+  const [isStylusOnly, setIsStylusOnly] = useState(false);
   const [position, setPosition] = useState<[number, number]>([-1, -1]);
   const [isDrawing, setIsDrawing] = useState(false);
 
@@ -70,6 +71,11 @@ function Canvas() {
 
     setPosition([x, y]);
 
+    ctx.strokeStyle = "rgba(100, 100, 100, 0.5)";
+    ctx.stroke(pathFromLetter(LETTERS["A"], x, y, scaleFactor, "first"));
+
+    ctx.strokeStyle = "rgb(0, 0, 0, 0.9)";
+
     ctx.beginPath();
     ctx.moveTo(x, y);
     setIsDrawing(true);
@@ -89,8 +95,6 @@ function Canvas() {
     if (canvasRef == null || canvasRef.current == null) {
       return;
     }
-
-    console.log("move", e);
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -138,6 +142,7 @@ function Canvas() {
         height={0.6 * height}
       />
       <div>{isDrawing ? "" : "not "} drawing; {position[0]}, {position[1]}</div>
+      <div>Scale Factor: <input type="number" value={scaleFactor} onChange={e => setScaleFactor(parseInt(e.target.value))} /></div>
       <div><label>
         <input type="checkbox" checked={isStylusOnly} onChange={() => setIsStylusOnly(!isStylusOnly)} />
         Stylus only
