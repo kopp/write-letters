@@ -1,5 +1,6 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { useWindowDimensions } from "./window_dimensions";
+import { pathForRuling } from "./alphabet";
 
 interface Point {
   x: number;
@@ -8,14 +9,32 @@ interface Point {
 
 type LineString = Point[];
 
-export function WritingPaper() {
+export interface WritingPaperProps {
+  marginTop?: number; // number of pixels at top empty of ruling
+  marginBottom?: number; // number of pixels at bottom empty of ruling
+  marginLeft?: number; // number of pixels left empty of ruling
+  marginRight?: number; // number of pixels right empty of ruling
+  rulingSpace?: number; // vertical space between two lines (in units of a line height)
+  scaleFactor?: number; // height of a line in pixels
+}
+
+export function WritingPaper({
+  marginTop = 40,
+  marginBottom = 20,
+  marginLeft = 30,
+  marginRight = 30,
+  rulingSpace = 0.25,
+  scaleFactor = 150,
+}: WritingPaperProps) {
   // state --------------------------------------------------------------------
 
   const [canvas, setCanvas] = useState<HTMLCanvasElement>();
   const [context, setContext] = useState<CanvasRenderingContext2D>();
 
   const canvasRef = useCallback((newCanvas: HTMLCanvasElement) => {
-    console.log("New canvas");
+    if (newCanvas == null) {
+      return;
+    }
     setCanvas(newCanvas);
     const newContext = newCanvas.getContext("2d");
     if (newContext == null) {
@@ -24,9 +43,38 @@ export function WritingPaper() {
     setContext(newContext);
   }, []);
 
+  // for new canvas elements, re-draw what we have
+  useEffect(() => {
+    drawRuling();
+    pencilDrawFullHistory();
+  }, [canvas, context]);
+
   const drawingHistory = useRef<LineString[]>([]);
 
   // drawing primitives -------------------------------------------------------
+
+  const drawRuling = () => {
+    if (canvas == null || context == null) {
+      return;
+    }
+
+    context.strokeStyle = "rgba(100, 100, 100, 0.2)";
+    for (
+      let y = marginTop + scaleFactor;
+      y < canvas.height - marginBottom;
+      y = y + (1 + rulingSpace) * scaleFactor
+    ) {
+      context.stroke(
+        pathForRuling(
+          marginLeft,
+          y,
+          canvas.width - marginRight - marginLeft,
+          scaleFactor,
+          4
+        )
+      );
+    }
+  };
 
   // Draw one point in the drawing history.
   // By default: draw the most recently added point in the drawing history.
@@ -89,6 +137,7 @@ export function WritingPaper() {
 
   const clearWriting = () => {
     context?.clearRect(0, 0, canvas?.width || 0, canvas?.height || 0);
+    drawRuling();
   };
 
   const undoLastLinestring = () => {
@@ -119,12 +168,6 @@ export function WritingPaper() {
     e.preventDefault();
     const pos = getPosition(e);
     drawingHistory.current.push([pos]);
-    console.log(
-      "touch start at",
-      pos,
-      "drawing history is",
-      drawingHistory.current
-    );
     pencilDrawPoint();
   };
 

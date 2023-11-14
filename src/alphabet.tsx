@@ -1,11 +1,10 @@
 // Define outline of the letters to use.
 
 // https://de.wikipedia.org/wiki/Datei:Lineatur_Liniendefinition.png
-const UNIT = 0.333333333333;
-const UNDER_LINE = 0;
-const BASE_LINE = 1 * UNIT;
-const MIDDLE_LINE = 2 * UNIT;
-const TOP_LINE = 3 * UNIT;
+const UNDER_LINE = 0; // should be 0; values > 0 will add some padding, which should not be handled here
+const BASE_LINE = 1 / 3;
+const MIDDLE_LINE = 2 / 3;
+const TOP_LINE = 1; // should be 1: Assumption is that the scale factor scales font coordinates to pixels; larger values will confuse some logic.
 
 // The points are given in 'letter local coordinates'.
 // The leftmost point of the letter, projected onto the under line, is (0, 0).
@@ -122,9 +121,15 @@ export function pathForRuling(
   );
 
   const path = new Path2D();
+  // horizontal lines
   for (const yCanvas of yCanvasValues) {
     path.moveTo(xBeginCanvas, yCanvas);
     path.lineTo(xEndCanvas, yCanvas);
+  }
+  // vertical lines
+  for (const xCanvas of [xBeginCanvas, xEndCanvas]) {
+    path.moveTo(xCanvas, yCanvasValues[0]);
+    path.lineTo(xCanvas, yCanvasValues[yCanvasValues.length - 1]);
   }
 
   return path;
