@@ -1,31 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import "./App.css";
 import { LETTERS, pathForRuling, pathFromLetter } from "./alphabet";
+import { WritingPaper } from "./write";
 
-function useWindowDimensions() {
-  const getWindowDimensions = () => {
-    const { innerWidth: width, innerHeight: height } = window;
-    return {
-      width,
-      height,
-    };
-  };
-
-  const [windowDimensions, setWindowDimensions] = useState(
-    getWindowDimensions()
-  );
-
-  useEffect(() => {
-    function handleResize() {
-      setWindowDimensions(getWindowDimensions());
-    }
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  return windowDimensions;
-}
+import { useWindowDimensions } from "./window_dimensions";
 
 interface HtmlCanvasRefs {
   canvas: HTMLCanvasElement;
@@ -229,7 +207,7 @@ function App() {
         />
       </div>
       <div>Next letter: {expectedLetter[0]}</div>
-      <Canvas />
+      <WritingPaper />
     </>
   );
 }
